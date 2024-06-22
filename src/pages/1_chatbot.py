@@ -60,7 +60,7 @@ def get_conversational_rag_chain(retriever_chain):
     llm = ChatOpenAI()
     
     prompt = ChatPromptTemplate.from_messages([
-      ("system", "Answer the user's questions based on the below context:\n\n{context}"),
+      ("system", get_prompt_prefix() + "Answer the user's questions based on the below context:\n\n{context}"),
       MessagesPlaceholder(variable_name="chat_history"),
       ("user", "{input}"),
     ])
@@ -79,6 +79,14 @@ def get_response(user_input):
     })
     
     return response['answer']
+
+def get_prompt_prefix():
+    prefix = f"Help the user personalize their supplement routine. Here's an overview of the user's profile:\n" \
+             f"Name: {st.session_state['name']}" \
+             f"Age: {st.session_state['age']}" \
+             f"Weight: {st.session_state['weight']} lbs" \
+             f"\n\n"    
+    return prefix
 
 # app config
 st.set_page_config(page_title="Supplement Bot", page_icon="🤖")
