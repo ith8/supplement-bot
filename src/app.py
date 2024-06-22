@@ -1,3 +1,4 @@
+import os
 import streamlit as st
 from langchain_core.messages import AIMessage, HumanMessage
 from langchain_community.document_loaders import WebBaseLoader
@@ -21,6 +22,10 @@ URLS = ["https://www.webmd.com/drugs/2/drug-172941/magnesium-l-threonate-oral/de
        ]
 
 def get_vectorstore_from_url():
+    if os.path.isdir("./chroma_db"):
+        return Chroma(persist_directory="./chroma_db", embedding_function=OpenAIEmbeddings())
+
+        
     loader = AsyncHtmlLoader(URLS)
     docs = loader.load()
 
@@ -31,8 +36,7 @@ def get_vectorstore_from_url():
     
     
     # create a vectorstore from the chunks
-    vector_store = Chroma.from_documents(document_chunks, OpenAIEmbeddings())
-    # vector_store = Chroma(persist_directory="./chroma_db", embedding_function=embedding_function)
+    vector_store = Chroma.from_documents(document_chunks, OpenAIEmbeddings(), persist_directory="./chroma_db")
 
     return vector_store
 
