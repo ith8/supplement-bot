@@ -1,16 +1,16 @@
 import streamlit as st
 
 st.set_page_config(
-    page_title="Hello",
+    page_title="Supplement Bot",
     page_icon="👋",
 )
 
-st.write("# Welcome to Streamlit! 👋")
+st.write("# Welcome to Supplement Bot👋")
 
-st.sidebar.success("Select a demo above.")
+st.sidebar.success("Select a page above")
 
 st.markdown(
     """
-    Testing
+    Get tailored supplement recommendations powered by AI
     """
 )
