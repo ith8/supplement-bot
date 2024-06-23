@@ -1,7 +1,7 @@
 import os
 import streamlit as st
 from langchain_core.messages import AIMessage, HumanMessage
-from langchain_community.document_loaders import WebBaseLoader
+from langchain_community.document_loaders import WebBaseLoader, PyPDFLoader
 from langchain.text_splitter import RecursiveCharacterTextSplitter
 from langchain_community.vectorstores import Chroma
 from langchain_openai import OpenAIEmbeddings, ChatOpenAI
@@ -9,6 +9,7 @@ from dotenv import load_dotenv
 from langchain_core.prompts import ChatPromptTemplate, MessagesPlaceholder
 from langchain.chains import create_history_aware_retriever, create_retrieval_chain
 from langchain.chains.combine_documents import create_stuff_documents_chain
+import PyPDF2
 
 from langchain.document_loaders import AsyncHtmlLoader
 from langchain.document_transformers import Html2TextTransformer
@@ -83,11 +84,35 @@ def get_response(user_input):
     
     return response['answer']
 
+def process_pdf(pdf):
+    # write to a temporary file
+    pdf_bytes = pdf.read()
+    with open("temp.pdf", "wb") as f:
+        f.write(pdf_bytes)
+
+    with open("temp.pdf", "rb") as f:
+            reader = PyPDF2.PdfReader(f)
+            num_pages = len(reader.pages)
+            text = ""
+            for page_num in range(num_pages):
+                page = reader.pages[page_num]
+                text += page.extract_text()
+    llm = ChatOpenAI()
+    prefix = 'Extract all of the relevant information that a supplement can help with '
+    prompt = ChatPromptTemplate.from_messages([
+         ("system", "Extract all of the relevant information that a supplement can help with"),
+         ("human", text),
+    ])
+
+    prompt_value = prompt.format()
+    return prompt_value
+    
 def get_prompt_prefix():
     prefix = f"Help the user personalize their supplement routine. Here's an overview of the user's profile:\n" \
              f"Name: {st.session_state['name']}" \
              f"Age: {st.session_state['age']}" \
              f"Weight: {st.session_state['weight']} lbs" \
+             f"Documents: {st.session_state['documents']}" \
              f"\n\n"    
     return prefix
 
@@ -102,9 +127,12 @@ if 'form_submitted' not in st.session_state:
         name = st.text_input("Name")
         age = st.text_input("Age")
         weight = st.text_input("Weight (lbs)")
+        pdf  = st.file_uploader("Upload health data", type="pdf")
         submit = st.form_submit_button("Submit")
 
         if submit:
+            if pdf:
+                st.session_state['documents'] = process_pdf(pdf)
             if name and age:
                 st.session_state['name'] = name
                 st.session_state['age'] = age
@@ -112,6 +140,7 @@ if 'form_submitted' not in st.session_state:
                 st.session_state['form_submitted'] = True
             else:
                 st.error("Please fill out all fields")
+
 else:
     # session state
     if "chat_history" not in st.session_state:
