@@ -122,8 +122,8 @@ def get_prompt_prefix():
     return prefix
 
 # app config
-st.set_page_config(page_title="Supplement Bot", page_icon="🤖")
-st.title("Supplement Bot")
+st.set_page_config(page_title="SuppleMentor", page_icon="🧬")
+st.title("SuppleMentor")
 
     # Step 1: Form to collect user information
 if 'form_submitted' not in st.session_state:
