@@ -109,11 +109,15 @@ def process_pdf(pdf):
     return prompt_value
     
 def get_prompt_prefix():
-    prefix = f"Help the user personalize their supplement routine. Here's an overview of the user's profile:\n" \
+    prefix = f"Help the user personalize their supplement routine to their personal health profile." \
+             f"If the user provide health test results, note risk factors that can be mitigated by supplements to make suggestions." \
+             f"Before recommending a suplement highlight information from the user profile that inform your suggesstions." \
+             f"Summarize your recommendation in bullet points and include relevant dosage, frequency, and time of day information." \
+             f"Here's an overview of the user's profile:\n" \
              f"Name: {st.session_state['name']}" \
              f"Age: {st.session_state['age']}" \
              f"Weight: {st.session_state['weight']} lbs" \
-             f"Documents: {st.session_state['documents']}" \
+             f"Health Documents: {st.session_state['documents']}" \
              f"\n\n"    
     return prefix
 
@@ -134,6 +138,8 @@ if 'form_submitted' not in st.session_state:
         if submit:
             if pdf:
                 st.session_state['documents'] = process_pdf(pdf)
+            else:
+                st.session_state['documents'] = "Not shared"
             if name and age:
                 st.session_state['name'] = name
                 st.session_state['age'] = age
