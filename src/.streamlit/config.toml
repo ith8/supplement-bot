@@ -1,3 +1,7 @@
+[server]
+
+enableStaticServing = true
+
 [theme] 
 
 primaryColor = "#FF8C02" # Bright orange

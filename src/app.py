@@ -5,6 +5,8 @@ st.set_page_config(
     page_icon="👋",
 )
 
+st.title("💊💊💊")
+
 st.write("# Welcome to Supplement Bot👋")
 
 st.sidebar.success("Select a page above")
