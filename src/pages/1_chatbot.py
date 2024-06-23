@@ -18,7 +18,10 @@ from langchain.document_transformers import Html2TextTransformer
 load_dotenv()
 URLS = ["https://www.webmd.com/drugs/2/drug-172941/magnesium-l-threonate-oral/details", 
         "https://www.webmd.com/vitamins/ai/ingredientmono-1126/berberine",
-        "https://www.mayoclinic.org/drugs-supplements-vitamin-d/art-20363792"
+        "https://www.mayoclinic.org/drugs-supplements-vitamin-d/art-20363792",
+        "https://www.forbes.com/health/supplements/best-brain-supplements/",
+        "https://www.forbes.com/health/wellness/natural-sleep-aids/",
+        "https://www.bodybuilding.com/content/the-8-supplements-for-strength-athletes-and-bodybuilders.html"
        ]
 
 def get_vectorstore_from_url():
@@ -124,8 +127,7 @@ else:
         response = get_response(user_query)
         st.session_state.chat_history.append(HumanMessage(content=user_query))
         st.session_state.chat_history.append(AIMessage(content=response))
-        
-        
+    
 
     # conversation
     for message in st.session_state.chat_history:
