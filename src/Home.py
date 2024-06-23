@@ -5,7 +5,8 @@ st.set_page_config(
     page_icon="🧬",
 )
 
-st.title("Revolutionize Your Health with SuppleMentor 🧬")
+st.image("./src/logo.png")
+st.title("SuppleMentor: Revolutionize Your Health")
 
 st.sidebar.success("Select a page above")
 
