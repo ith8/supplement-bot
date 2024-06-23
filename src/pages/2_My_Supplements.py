@@ -13,15 +13,14 @@ st.divider()
 # Define the data
 mock_data = {
     'Drug Id': [1, 2, 3, 4, 5],
-    'Drug Name': ['Ibuprofen', 'Amoxicillin', 'Lisinopril', 'Metformin', 'Atorvastatin'],
-    'Dosages Left': [20, 10, 15, 25, 30],
-    'Next Refill Date': ['2024-07-01', '2024-07-15', '2024-07-20', '2024-08-01', '2024-08-15'],
-    'Instructions': [
-        'Take one tablet every 6 hours as needed for pain',
-        'Take one capsule three times a day with food',
-        'Take one tablet daily in the morning',
-        'Take one tablet twice a day with meals',
-        'Take one tablet daily in the evening'
+    'Drug Name': ['Magnesium Glycinate', 'Melatonin', 'Omega 3', 'Metformin', 'Vitamin D'],
+    'Dosages (mg)': [1000, 5, 600, 500, 2000],
+    'Effectiveness (1-5)': [
+        '4',
+        '5',
+        '3',
+        '4',
+        '3'
     ]
 }
 
