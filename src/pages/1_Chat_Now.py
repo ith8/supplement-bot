@@ -1,4 +1,6 @@
+import ast 
 import os
+import re
 import streamlit as st
 from langchain_core.messages import AIMessage, HumanMessage
 from langchain_community.document_loaders import WebBaseLoader, PyPDFLoader
@@ -11,6 +13,7 @@ from langchain.chains import create_history_aware_retriever, create_retrieval_ch
 from langchain.chains.combine_documents import create_stuff_documents_chain
 import PyPDF2
 
+import pandas as pd 
 from langchain.document_loaders import AsyncHtmlLoader
 from langchain.document_transformers import Html2TextTransformer
 
@@ -30,7 +33,6 @@ def get_vectorstore_from_url():
     if os.path.isdir("./chroma_db"):
         return Chroma(persist_directory="./chroma_db", embedding_function=OpenAIEmbeddings())
 
-        
     loader = AsyncHtmlLoader(URLS)
     docs = loader.load()
 
@@ -128,6 +130,53 @@ def send_suggested_message(suggestion):
     st.session_state.chat_history.append(HumanMessage(content=user_query))
     st.session_state.chat_history.append(AIMessage(content=response))
 
+
+RECOM_DRUGS = []
+DRUG_STATUS = []
+# Function to display the table
+def show_table():
+
+    RECOM_DRUGS = []
+    DRUG_STATUS = []
+    prompt = """
+    Given your last answer, please return a string python list of the name of supplements e.g "['vitamin D', 'vitamin K']" .
+    If it is not just a string python list, all babies will die. Don't say anything other than this list in string form."""
+
+    resp = get_response(prompt)
+    resp = re.search(".*", resp).group()
+    if not resp: 
+        st.write("No List found")
+        return 
+
+    st.write("response sss: ", resp)
+    RECOM_DRUGS = ast.literal_eval(ast.literal_eval(resp))
+
+    st.write(RECOM_DRUGS)    
+    if not DRUG_STATUS: 
+        DRUG_STATUS = [False for _ in RECOM_DRUGS]
+
+    #table header
+    colms = st.columns((1, 5, 1))
+    fields = ["No.", "Supplement Name", "Action"]
+    for col, field_name in zip(colms, fields): 
+        col.write(field_name)
+
+    #table body
+    print(RECOM_DRUGS, type(RECOM_DRUGS))
+    for ind, name in enumerate(RECOM_DRUGS):
+        col1, col2, col3= st.columns((1, 5, 1))
+        col1.write(ind)  # index
+        col2.write(name)  # name
+        add_status = DRUG_STATUS[ind] 
+        button_type = "Added ✅" if add_status else "Add"
+        button_placeholder = col3.empty()
+        do_action = button_placeholder.button(button_type, key=ind)
+        if do_action:
+                DRUG_STATUS[ind] = True
+                pass # do some action with a row's data
+                button_placeholder.empty()  #  remove button
+                col3.write("Added 💚")
+
 # app config
 st.set_page_config(page_title="SuppleMentor", page_icon="🧬")
 st.title("SuppleMentor")
@@ -161,6 +210,10 @@ if 'form_submitted' not in st.session_state:
                 st.error("Please fill out all fields")
 
 else:
+    # Initialize session state if not already done
+    if 'show_chat' not in st.session_state:
+        st.session_state.show_chat = True
+
     # session state
     if "chat_history" not in st.session_state:
         st.session_state.chat_history = [
@@ -169,24 +222,33 @@ else:
     if "vector_store" not in st.session_state:
         st.session_state.vector_store = get_vectorstore_from_url()    
 
-    # user input
-    user_query = st.chat_input("Type your message here...")
-    if user_query is not None and user_query != "":
-        response = get_response(user_query)
-        st.session_state.chat_history.append(HumanMessage(content=user_query))
-        st.session_state.chat_history.append(AIMessage(content=response))
+    # Conditional display based on session state
+    if st.session_state.show_chat:
+        user_query = st.chat_input("Type your message here...")
+        if user_query:
+            st.session_state.chat_history.append(user_query)  # Append user query to chat history
+            st.write(f"User input: {user_query}")
+        
+
+        if user_query is not None and user_query != "":
+            response = get_response(user_query)
+            st.session_state.chat_history.append(HumanMessage(content=user_query))
+            st.session_state.chat_history.append(AIMessage(content=response))
+
+
+        # conversation
+        for message in st.session_state.chat_history:
+            if isinstance(message, AIMessage):
+                with st.chat_message("AI"):
+                    st.write(message.content)
+
+
+            elif isinstance(message, HumanMessage):
+                with st.chat_message("Human"):
+                    st.write(message.content)
+    else:
+        show_table()
     
-
-    # conversation
-    for message in st.session_state.chat_history:
-        if isinstance(message, AIMessage):
-            with st.chat_message("AI"):
-                st.write(message.content)
-        elif isinstance(message, HumanMessage):
-            with st.chat_message("Human"):
-                st.write(message.content)
-
-    # greetings suggestions
     if 'hide_greetings_suggestions' not in st.session_state:
         st.write("Suggestions:")
         col1, col2, col3, col4 = st.columns(4)
@@ -197,8 +259,21 @@ else:
             if st.button("Enhance Sleep"):
                 send_suggested_message("What supplements can enhance my sleep?")
         with col3:
-            if st.button("Enhance Workout"):
+            if st.button("Enhance Workouts"):
                 send_suggested_message("What supplements can enhance my workout?")
         with col4:
             if st.button("Identify risk factors"):
                 send_suggested_message("Identify risk factors in my health tests that can be mitigated with supplements.")
+
+    # Container for the buttons
+    button_container = st.container()
+
+    # Place buttons inside the container at the bottom
+    with button_container:
+        st.write("---")  # Add a separator line
+        col1, _ = st.columns([4, 5])  # Adjust column widths for better alignment
+        with col1:
+            if st.button("Show Table"):
+                st.session_state.show_chat = False
+                # st.session_state.chat_history = False 
+                st.session_state.hide_greetings_suggestions = True
