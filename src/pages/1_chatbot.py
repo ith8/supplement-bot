@@ -82,7 +82,7 @@ def get_response(user_input):
         "chat_history": st.session_state.chat_history,
         "input": user_input
     })
-    
+    st.session_state['hide_greetings_suggestions'] = True
     return response['answer']
 
 def process_pdf(pdf):
@@ -109,7 +109,7 @@ def process_pdf(pdf):
     return prompt_value
     
 def get_prompt_prefix():
-    prefix = f"Help the user personalize their supplement routine to their personal health profile." \
+    prefix = f"You are SuppleMentor, an AI that helps the user personalize their supplement routine to their personal health profile." \
              f"If the user provide health test results, note risk factors that can be mitigated by supplements to make suggestions." \
              f"Before recommending a suplement highlight information from the user profile that inform your suggesstions." \
              f"Summarize your recommendation in bullet points and include relevant dosage, frequency, and time of day information." \
@@ -117,21 +117,29 @@ def get_prompt_prefix():
              f"Name: {st.session_state['name']}" \
              f"Age: {st.session_state['age']}" \
              f"Weight: {st.session_state['weight']} lbs" \
+             f"Sex: {st.session_state['sex']}" \
              f"Health Documents: {st.session_state['documents']}" \
              f"\n\n"    
     return prefix
+
+def send_suggested_message(suggestion):
+    user_query = suggestion
+    response = get_response(user_query)
+    st.session_state.chat_history.append(HumanMessage(content=user_query))
+    st.session_state.chat_history.append(AIMessage(content=response))
 
 # app config
 st.set_page_config(page_title="SuppleMentor", page_icon="🧬")
 st.title("SuppleMentor")
 
-    # Step 1: Form to collect user information
+# Step 1: Form to collect user information
 if 'form_submitted' not in st.session_state:
     with st.form("user_form"):
         st.subheader("Please fill out your information")
         name = st.text_input("Name")
         age = st.text_input("Age")
         weight = st.text_input("Weight (lbs)")
+        sex = st.text_input("Sex")
         pdf  = st.file_uploader("Upload health data", type="pdf")
         submit = st.form_submit_button("Submit")
 
@@ -140,10 +148,11 @@ if 'form_submitted' not in st.session_state:
                 st.session_state['documents'] = process_pdf(pdf)
             else:
                 st.session_state['documents'] = "Not shared"
-            if name and age:
+            if name and age and weight and sex:
                 st.session_state['name'] = name
                 st.session_state['age'] = age
                 st.session_state['weight'] = weight
+                st.session_state['sex'] = sex
                 st.session_state['form_submitted'] = True
             else:
                 st.error("Please fill out all fields")
@@ -152,7 +161,7 @@ else:
     # session state
     if "chat_history" not in st.session_state:
         st.session_state.chat_history = [
-            AIMessage(content=f"Hello {st.session_state['name']}, I am a bot. How can I help you?"),
+            AIMessage(content=f"Hello {st.session_state['name']}, I'm SuppleMentor here to help you personalize your supplement routine. How can I help you today?"),
         ]
     if "vector_store" not in st.session_state:
         st.session_state.vector_store = get_vectorstore_from_url()    
@@ -173,3 +182,20 @@ else:
         elif isinstance(message, HumanMessage):
             with st.chat_message("Human"):
                 st.write(message.content)
+
+    # greetings suggestions
+    if 'hide_greetings_suggestions' not in st.session_state:
+        st.write("Suggestions:")
+        col1, col2, col3, col4 = st.columns(4)
+        with col1:
+            if st.button("Enhance Focus"):
+                send_suggested_message("What supplements can enhance my focus?")
+        with col2:
+            if st.button("Enhance Sleep"):
+                send_suggested_message("What supplements can enhance my sleep?")
+        with col3:
+            if st.button("Enhance Workout"):
+                send_suggested_message("What supplements can enhance my workout?")
+        with col4:
+            if st.button("Identify risk factors"):
+                send_suggested_message("Identify risk factors in my health tests that can be mitigated with supplements.")
