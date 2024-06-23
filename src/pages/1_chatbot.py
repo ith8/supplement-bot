@@ -25,6 +25,7 @@ URLS = ["https://www.webmd.com/drugs/2/drug-172941/magnesium-l-threonate-oral/de
         "https://www.bodybuilding.com/content/the-8-supplements-for-strength-athletes-and-bodybuilders.html"
        ]
 
+
 def get_vectorstore_from_url():
     if os.path.isdir("./chroma_db"):
         return Chroma(persist_directory="./chroma_db", embedding_function=OpenAIEmbeddings())
