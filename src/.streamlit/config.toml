@@ -4,12 +4,8 @@ enableStaticServing = true
 
 [theme] 
 
-primaryColor = "#FF8C02" # Bright orange
-
-textColor = "white"
-
-backgroundColor = "#00325B" # Dark blue
-
-secondaryBackgroundColor = "#55B2FF" # Lighter blue
-
-font = "serif"
+primaryColor="#d33682"
+backgroundColor="#002b36"
+secondaryBackgroundColor="#586e75"
+textColor="#fafafa"
+font="serif"
