@@ -140,12 +140,15 @@ if 'form_submitted' not in st.session_state:
         age = st.text_input("Age")
         weight = st.text_input("Weight (lbs)")
         sex = st.text_input("Sex")
-        pdf  = st.file_uploader("Upload health data", type="pdf")
+        pdfs  = st.file_uploader("Upload health data", type="pdf", accept_multiple_files=True)
         submit = st.form_submit_button("Submit")
 
         if submit:
-            if pdf:
-                st.session_state['documents'] = process_pdf(pdf)
+            if pdfs:
+                s = ''
+                for pdf in pdfs:
+                    s += process_pdf(pdf)
+                st.session_state['documents'] = s
             else:
                 st.session_state['documents'] = "Not shared"
             if name and age and weight and sex:
